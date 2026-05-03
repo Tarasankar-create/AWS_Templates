@@ -1,0 +1,41 @@
+Resources:
+  Myinstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-02eb0c2388ee999f9
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: myInstance
+      UserData:
+        fn::Base64: |
+          #!bin/bash
+          yum update -y
+          yum install -y nginx
+          systemctl start nginx
+          systemctl enable nginx
+          echo "
+          <html>
+          <head>
+          <h1>This is heading</h1>
+          </head>
+          <body>
+          <p> Ths is paragraph</p>
+          </body
+          </html>
+          " > usr/share/nginx/html/index.html
+  InstanceSecurityGroup:
+    Type: "AWS::EC2::securityGroup"
+    Properties:
+      GroupDescription: "Enable HTTP access"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  
+  ElasticIp:
+    Type: "AWS::EC2::EIP"
+    Properties: !Ref Myinstance
