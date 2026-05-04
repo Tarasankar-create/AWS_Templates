@@ -39,3 +39,51 @@
 #  ElasticIp:
 #    Type: "AWS::EC2::EIP"
 #    Properties: !Ref Myinstance
+
+# or
+
+
+Resources:
+  myInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-02eb0c2388ee999f9
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: MyInstance
+      UserData: !Base64 |
+        #!/bin/bash
+        yum update -y
+        yum install -y nginx
+        systemctl start nginx
+        systemctl enable nginx
+
+        cat<<EOF > /usr/share/nginx/html/index.html
+        <html>
+        <head>
+        This is head
+        </head>
+        <body>
+        <p>This is paragraph</p>
+        </body>
+        </html>
+        EOF
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP Access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref myInstance
+
