@@ -1,69 +1,28 @@
- Resources:
+Resources:
 
-  MyS3Bucket:
+  MyBucket:
     Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub "my-static-site-${AWS::AccountId}"
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: BucketOwnerPreferred
-
-  MyOriginAccessControl:
-    Type: AWS::CloudFront::OriginAccessControl
-    Properties:
-      OriginAccessControlConfig:
-        Name: my-oac
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-
-  MyBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref MyS3Bucket
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
-            Action: s3:GetObject
-            Resource: !Sub "${MyS3Bucket.Arn}/*"
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${MyDistribution}"
 
   MyDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Enabled: true
-        DefaultRootObject: index.html
-
         Origins:
           - Id: S3Origin
-            DomainName: !GetAtt MyS3Bucket.RegionalDomainName
-            OriginAccessControlId: !Ref MyOriginAccessControl
+            DomainName: !GetAtt MyBucket.RegionalDomainName
             S3OriginConfig: {}
 
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
-          ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods:
-            - GET
-            - HEAD
-          CachedMethods:
-            - GET
-            - HEAD
+          ViewerProtocolPolicy: allow-all
           ForwardedValues:
             QueryString: false
-
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: true
 
 Outputs:
 
   BucketName:
-    Value: !Ref MyS3Bucket
+    Value: !Ref MyBucket
 
   CloudFrontURL:
-    Value: !Sub "https://${MyDistribution.DomainName}"
+    Value: !GetAtt MyDistribution.DomainName
