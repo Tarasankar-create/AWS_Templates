@@ -1,7 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFront with S3 (Private Bucket using OAC)
-
-Resources:
+ Resources:
 
   MyS3Bucket:
     Type: AWS::S3::Bucket
